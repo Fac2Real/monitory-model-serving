@@ -1,0 +1,24 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+*.pyc
+__pycache__/
+.DS_Store
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Secrets / Environment variables
+.env
+*.env
+config.ini # 민감 정보가 있다면
+
+# Python build artifacts
+build/
+dist/
+*.egg-info/
