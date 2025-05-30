@@ -1,84 +1,95 @@
-absl-py==1.4.0
-astor==0.8.1
-astunparse==1.6.3
-bleach==1.5.0
-boto3==1.28.39
-botocore==1.31.39
-brotlipy==0.7.0
-cachetools==5.3.0
-certifi @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_5d968ni_yn/croot/certifi_1671487774636/work/certifi
-cffi @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_ab19r4bji3/croot/cffi_1670423206034/work
-charset-normalizer @ file:///tmp/build/80754af9/charset-normalizer_1630003229654/work
-cloudpickle==2.2.1
-conda==23.1.0
-conda-content-trust @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_11146a2b-93c2-444c-a378-ad4fac363e991s0r1hnp/croots/recipe/conda-content-trust_1658126383571/work
-conda-package-handling @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_5f3f459f9v/croot/conda-package-handling_1672865025324/work
-conda_package_streaming @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_58gpsa_6af/croot/conda-package-streaming_1670508144037/work
-cryptography @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_8c_qoky_1b/croot/cryptography_1673298759921/work
-dill==0.3.7
-filelock==3.12.3
-flatbuffers==1.12
-gast==0.4.0
-google-auth==2.16.0
-google-auth-oauthlib==0.4.6
-google-pasta==0.2.0
-grpcio @ file:///Users/ktietz/ci_310/grpcio_1643970354199/work
-h5py @ file:///Users/ktietz/ci_310/h5py_1644262287129/work
-html5lib==0.9999999
-idna @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_771olrhiqw/croot/idna_1666125579282/work
-Jinja2==3.1.2
-jmespath==1.0.1
-keras==2.9.0
-Keras-Preprocessing==1.1.2
-libclang==15.0.6.1
-Markdown==3.4.1
-MarkupSafe==2.1.2
-mpmath==1.3.0
-multiprocess==0.70.15
-networkx==3.1
-numpy @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_ba5c3eaa-be93-4f42-ae24-fa720a3c6627m_sp7nbj/croots/recipe/numpy_and_numpy_base_1652801688716/work
-oauthlib==3.2.2
-opencv-python==4.7.0.72
-opt-einsum==3.3.0
-packaging==23.0
-Pillow==9.5.0
-pluggy @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_croot-w6jyveby/pluggy_1648109277227/work
-protobuf==4.24.2
-pyasn1==0.4.8
-pyasn1-modules==0.2.8
-pycosat @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_e9xhel3kyj/croot/pycosat_1666805516297/work
-pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
-pyOpenSSL @ file:///opt/conda/conda-bld/pyopenssl_1643788558760/work
-pyrouge==0.1.3
-PySocks @ file:///Users/ktietz/ci_310/pysocks_1643961536721/work
-python-dateutil==2.8.2
-pytorch-pretrained-bert==0.6.2
-PyYAML==6.0
-regex==2023.8.8
-requests==2.31.0
-requests-oauthlib==1.3.1
-rsa==4.9
-ruamel.yaml @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_aeh5mqcw49/croot/ruamel.yaml_1666304555976/work
-ruamel.yaml.clib @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_f64xdg2rww/croot/ruamel.yaml.clib_1666302244208/work
-s3transfer==0.6.2
-six==1.15.0
-sympy==1.12
-tensorboard==1.9.0
-tensorboard-data-server==0.6.1
-tensorboard-plugin-wit==1.8.1
-tensorboardX==2.6.2.2
-tensorflow @ https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.9.0-py3-none-any.whl#sha256=42cc87627c3b0f2d60776412eaaea3aa0856650a77f94bec841535908f77ee45
-tensorflow-estimator==2.9.0
-tensorflow-macos==2.9.0
-tensorflow-metal==0.5.0
-termcolor==2.2.0
-toolz @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_362wyqvvgy/croot/toolz_1667464079070/work
-torch==2.0.1
-torchaudio==2.0.2
-torchvision==0.15.2
-tqdm @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_637jfu39ar/croots/recipe/tqdm_1664392693982/work
-typing_extensions==4.7.1
-urllib3 @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_8fvc4z_gis/croot/urllib3_1673575619550/work
-Werkzeug==2.2.2
-wrapt==1.14.1
-zstandard @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_99wz2rcox4/croots/recipe/zstandard_1663827384884/work
+# FastAPI 및 웹 서버
+fastapi
+uvicorn[standard]
+
+# AWS SDK
+boto3
+
+# 데이터 처리 및 과학 계산
+numpy
+pandas
+h5py
+
+# 머신러닝/딥러닝 (TensorFlow)
+tensorflow  # tensorflow-metal, tensorflow-macos 대신 일반 tensorflow 사용
+            # keras는 tensorflow 2.x 버전부터 포함되어 있으므로 별도 명시 안 해도 됨
+            # tensorflow-estimator도 tensorflow가 알아서 관리
+
+# 이미지 처리
+Pillow
+opencv-python # <--- 만약 OpenCV를 사용한다면
+
+# PyTorch (만약 TensorFlow와 함께 또는 별도로 사용한다면)
+# torch
+# torchvision
+# torchaudio
+# pytorch-pretrained-bert # <--- 만약 사용한다면 (BERT 관련)
+
+# 유틸리티 및 기타
+certifi         # SSL 인증서 관련, 보통 requests 등이 의존
+charset-normalizer # requests 의존성
+cloudpickle     # 객체 직렬화
+cryptography    # 암호화 관련
+dill            # cloudpickle과 유사, 객체 직렬화
+filelock        # 파일 잠금
+idna            # requests 의존성
+Jinja2          # 템플릿 엔진 (FastAPI 등에서 사용 가능)
+jmespath        # boto3 의존성
+MarkupSafe      # Jinja2 의존성
+mpmath          # sympy 의존성
+multiprocess    # dill과 함께 사용될 수 있음
+networkx        # 그래프 처리
+oauthlib        # 인증 관련
+packaging       # 버전 관리 등
+protobuf        # TensorFlow 등에서 사용
+pyasn1          # google-auth 등 의존성
+pyasn1-modules  # google-auth 등 의존성
+# pycparser       # cffi 의존성, 보통 자동으로 설치됨
+# pyOpenSSL       # cryptography와 함께 사용될 수 있음
+# PySocks         # requests의 SOCKS 프록시 지원, 필요시 추가
+PyYAML          # YAML 파일 처리
+regex           # 정규 표현식
+requests        # HTTP 요청
+requests-oauthlib # requests와 oauthlib 결합
+rsa             # 암호화 관련
+# ruamel.yaml     # PyYAML 대안, 둘 중 하나만 사용하거나 PyYAML로 통일
+# ruamel.yaml.clib # ruamel.yaml C 확장
+s3transfer      # boto3 의존성
+six             # 호환성 라이브러리
+sympy           # 심볼릭 수학
+# tensorboard     # TensorFlow와 함께 설치되거나, 필요시 명시
+# tensorboard-data-server # tensorboard 의존성
+# tensorboard-plugin-wit # tensorboard 의존성
+# tensorboardX    # PyTorch용 TensorBoard, PyTorch 사용 시 필요하면 추가
+termcolor       # 터미널 텍스트 색상 (TensorFlow 등에서 사용)
+# toolz           # 함수형 프로그래밍 유틸리티, dask 등이 의존
+tqdm            # 진행 표시줄
+typing_extensions # 타입 힌트 확장
+urllib3         # requests 의존성
+Werkzeug        # 웹 서버 게이트웨이 인터페이스 (Flask 등에서 사용)
+# wrapt           # 데코레이터, 함수 래핑 유틸리티
+# zstandard       # 압축 라이브러리
+
+# --- 아래는 원래 목록에 있었으나, 보통 다른 패키지의 의존성으로 자동 설치되거나
+# --- 플랫폼 특정적이거나, 덜 핵심적인 것들 (필요하면 다시 추가) ---
+# absl-py
+# astor
+# astunparse
+# bleach
+# brotlipy
+# cachetools
+# cffi
+# flatbuffers
+# gast
+# google-auth
+# google-auth-oauthlib
+# google-pasta
+# grpcio
+# html5lib
+# Keras-Preprocessing # tensorflow.keras.preprocessing으로 대체됨
+# libclang
+# Markdown
+# opt-einsum
+# pluggy
+# pycosat # conda 환경에서 자주 보이지만 pip으로도 설치 가능. 명시적 필요 없으면 제외 가능.
+# pyrouge # ROUGE 스코어 계산, NLP 특정 작업용
