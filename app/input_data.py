@@ -32,15 +32,20 @@ def get_s3_key_for_input(zoneId, equipId):
     date = one_hour_ago.strftime("%Y-%m-%d")
 
     s3_key = f"EQUIPMENT/date={date}/zone_id={zoneId}/equip_id={equipId}/"
+
+    # 로그 출력
+    print(f"✅ S3 Key 생성 정보 - date: {date}, zoneId: {zoneId}, equipId: {equipId}")
     return s3_key
 
-
+"""
+S3에서 최신 1시간 데이터 불러오기
+"""
 def load_input_data_from_s3(zoneId, equipId): 
     target_bucket = S3_INPUT_DATA_BUCKET_NAME
     target_key = get_s3_key_for_input(zoneId, equipId)
 
     if not target_bucket or not target_key:
-        print("Error: S3 input data bucket name or key is not set.")
+        print("❌ Error: S3 input data bucket name or key is not set.")
         return None
 
     s3_client = get_s3_client_for_input()
@@ -48,13 +53,13 @@ def load_input_data_from_s3(zoneId, equipId):
     latest_mod_time = None
 
     try:
-        print(f"Listing objects in s3://{target_bucket}/{target_key}")
+        print(f"💡 s3://{target_bucket}/{target_key} 경로의 객체를 나열합니다.")
         # 해당 디렉토리(접두사)의 객체 목록 가져오기
         # list_objects_v2는 페이징 처리가 필요할 수 있지만, 여기서는 간단히 첫 페이지 가정
         response = s3_client.list_objects_v2(Bucket=target_bucket, Prefix=target_key)
 
         if 'Contents' not in response:
-            print(f"No files found in s3://{target_bucket}/{target_key}")
+            print(f"❌ S3에 없는 파일 경로://{target_bucket}/{target_key}")
             return None
 
         # 파일 확장자에 맞는 파일들만 필터링하고 최신 파일 찾기
@@ -70,10 +75,10 @@ def load_input_data_from_s3(zoneId, equipId):
                 latest_file_key = key
         
         if latest_file_key is None:
-            print(f"No files with extension '.json' found in s3://{target_bucket}/{target_key}")
+            print(f"❌ s3://{target_bucket}/{target_key} 경로에 '.json' 확장자를 가진 파일이 없습니다.")
             return None
 
-        print(f"Latest file found: s3://{target_bucket}/{latest_file_key} (LastModified: {latest_mod_time})")
+        print(f"⭐️ 최신 파일 발견: s3://{target_bucket}/{latest_file_key} (최종 수정일: {latest_mod_time})")
 
         # 최신 파일 내용 읽기
         file_response = s3_client.get_object(Bucket=target_bucket, Key=latest_file_key)
@@ -86,7 +91,7 @@ def load_input_data_from_s3(zoneId, equipId):
         if file_extension.lower() in [".jsonl", ".ndjson"]:
             lines = [line for line in file_content_string.splitlines() if line.strip()]
             if not lines:
-                print(f"Warning: Latest file s3://{target_bucket}/{latest_file_key} is empty or contains only whitespace.")
+                print(f"🚨경고: 최신 파일 s3://{target_bucket}/{latest_file_key} 이(가) 비어있거나 공백만 포함하고 있습니다.")
                 return pd.DataFrame() # 빈 DataFrame 반환
             df = pd.read_json(io.StringIO('\n'.join(lines)), lines=True)
         elif file_extension.lower() == ".json":
@@ -94,83 +99,126 @@ def load_input_data_from_s3(zoneId, equipId):
             # 여기서는 간단히 pd.read_json(orient='records')를 가정
             # 실제 JSON 구조에 맞게 수정 필요
             df = pd.read_json(io.StringIO(file_content_string), orient='records')
-        elif file_extension.lower() == ".csv":
-            df = pd.read_csv(io.StringIO(file_content_string))
         else:
-            print(f"Unsupported file extension for parsing: .json. Returning raw content.")
+            print(f"🚨지원하지 않는 파일 확장자(.json)입니다. 원본 내용을 반환합니다.")
             # DataFrame으로 변환하지 않고 원시 문자열 내용 반환 (또는 에러 처리)
             # API 응답 시 이 경우를 고려해야 함
             return {"file_key": latest_file_key, "raw_content": file_content_string}
 
 
-        print(f"Data from latest file loaded successfully. Shape: {df.shape}")
+        print(f"⭐️ 최신 파일의 데이터를 성공적으로 불러왔습니다. 데이터 형태: {df.shape}")
         if df.empty:
-            print(f"Warning: Loaded DataFrame from s3://{target_bucket}/{latest_file_key} is empty.")
+            print(f"🚨경고: s3://{target_bucket}/{latest_file_key} 에서 불러온 DataFrame이 비어있습니다.")
+        else:
+            # 데이터 일부 샘플 출력 (최대 5행)
+            print("\n============================")
+            print("\n 👀 데이터 프레임 미리보기 (최대 5행):")
+            print(df.head())
+            print("\n============================")
         
         # 눈으로 확인하기 위해 DataFrame을 반환하거나,
         # API 응답에서 처리하기 쉽도록 to_dict('records') 등으로 변환하여 반환할 수 있습니다.
-        return df 
+        preprocess_input_data(df,5)
+        # return df
 
     except s3_client.exceptions.NoSuchKey:
         # 이 예외는 get_object 호출 시 발생할 수 있으나, list_objects_v2로 먼저 확인하므로 발생 빈도 낮음
         print(f"Error: Specific file not found during get_object (should not happen if list_objects was successful).")
         return None
     except Exception as e:
-        print(f"Error loading latest input data from S3 directory s3://{target_bucket}/{target_key}: {e}")
+        print(f"🚨 S3 디렉토리 s3://{target_bucket}/{target_key} 에서 최신 입력 데이터를 불러오는 중 오류가 발생했습니다: {e}")
         import traceback
         traceback.print_exc()
         return None
 
-# (선택 사항) 데이터 전처리 함수
-def preprocess_input_data(df: pd.DataFrame):
+"""
+데이터 전처리 함수
+"""
+def preprocess_input_data(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
     """
-    로드된 DataFrame을 모델 입력 형식에 맞게 전처리합니다.
-    이 부분은 모델 학습 시 사용한 전처리 방식과 일치해야 합니다.
+    S3 등에서 로드한 DataFrame을 모델 입력용 wide 형태로 전처리합니다.
+    - 시간순 정렬
+    - rolling mean/std 파생 변수 생성
+    - sensorType 필터링 및 한글 컬럼명 매핑
+    - 그룹 집계 및 wide pivot 변환
+    - power_factor 생성
     """
-    if df is None:
+    if df is None or df.empty:
+        print("❌ 입력 데이터가 없습니다.")
         return None
-    print("Preprocessing input data...")
-    # 예시: 특정 컬럼만 선택하거나, 스케일링 등을 수행
-    # features = df[['feature1', 'feature2', 'feature3']].values.tolist()
-    # 실제 모델의 입력 형태에 맞게 수정 (예: NumPy 배열, 리스트의 리스트 등)
-    # 이 예제에서는 DataFrame 전체를 반환하고, main.py에서 필요한 부분만 사용한다고 가정
-    return df
 
+    print("📊 [1] 시간순 정렬 중...")
+    df = df.sort_values(['equipId', 'sensorType', 'time'])
+    print(df.head())
 
-# --- 여기부터 데이터를 열어보는 코드 ---
-if __name__ == "__main__":
-    example_zone_id = "20250507165750-827"  # 실제 zone_id로 변경
-    example_equip_id = "20250507171316-389" # 실제 equip_id로 변경
+    print("\n📊 [2] rolling mean/std 계산 중...")
+    df['val_rollmean'] = (
+        df.groupby(['equipId', 'sensorType'])['val']
+        .rolling(window=window, min_periods=1)
+        .mean()
+        .reset_index(level=[0,1], drop=True)
+    )
+    df['val_rollstd'] = (
+        df.groupby(['equipId', 'sensorType'])['val']
+        .rolling(window=window, min_periods=1)
+        .std()
+        .reset_index(level=[0,1], drop=True)
+    )
+    print(df[['equipId', 'sensorType', 'val', 'val_rollmean', 'val_rollstd']].head())
 
-    print(f"Attempting to load data for zone_id='{example_zone_id}', equip_id='{example_equip_id}'...")
-    
-    # S3_INPUT_DATA_BUCKET_NAME이 설정되었는지 확인
-    if not S3_INPUT_DATA_BUCKET_NAME:
-        print("환경변수 S3_INPUT_DATA_BUCKET_NAME이 설정되지 않았습니다.")
-        print("'.env' 파일에 S3_INPUT_DATA_BUCKET_NAME='your-bucket-name' 형식으로 추가하거나 직접 설정해주세요.")
+    print("\n📊 [3] sensorType 매핑 및 필터링 중...")
+    mapping = {
+        'temp': 'temperature',
+        'humid': 'humidity',
+        'pressure': 'pressure',
+        'vibration': 'vibration',
+        'reactive_power': 'reactive_power',
+        'active_power': 'active_power',
+        # 필요시 다른 sensorType도 추가
+    }
+    df = df[df['sensorType'].isin(mapping.keys())]
+
+    print("\n📊 [4] 그룹 집계(mean) 중...")
+    agg_df = (
+        df.groupby(['equipId', 'sensorType'])[['val', 'val_rollmean', 'val_rollstd']]
+        .mean()
+        .reset_index()
+    )
+    print(agg_df.head())
+
+    print("\n📊 [5] wide 형태로 pivot 변환 중...")
+    pivot_cols = ['val', 'val_rollmean', 'val_rollstd']
+    df_wide = agg_df.pivot(
+        index=['equipId'],
+        columns='sensorType',
+        values=pivot_cols
+    ).reset_index()
+    print(df_wide.head())
+
+    print("\n📊 [6] 컬럼명 평탄화(flatten) 중...")
+    df_wide.columns = [
+        col[0] if col[0] == 'equipId'
+        else (
+            f"{mapping.get(col[1], col[1])}" if col[0] == 'val'
+            else f"{mapping.get(col[1], col[1])}_{col[0].replace('val_', '')}"
+        )
+        for col in df_wide.columns
+    ]
+    df_wide = df_wide.rename(columns={'equipId': 'equipment'})
+    print(df_wide.head())
+
+    print("\n📊 [7] power_factor 생성 중...")
+    if 'active_power' in df_wide.columns and 'reactive_power' in df_wide.columns:
+        df_wide['power_factor'] = (
+            df_wide['active_power'] /
+            (df_wide['active_power']**2 + df_wide['reactive_power']**2)**0.5
+        )
+        print("power_factor 생성 완료")
     else:
-        loaded_dataframe = load_input_data_from_s3(example_zone_id, example_equip_id)
+        print("active_power, reactive_power 컬럼이 없어 power_factor 생성 생략")
 
-        if loaded_dataframe is not None:
-            if isinstance(loaded_dataframe, pd.DataFrame):
-                print("\n--- 로드된 DataFrame의 내용 (처음 5줄) ---")
-                print(loaded_dataframe.head())
+    print("\n✅ 전처리 완료! 최종 데이터 샘플:")
+    print(df_wide.head())
 
-                print("\n--- DataFrame 정보 ---")
-                loaded_dataframe.info()
+    return df_wide
 
-                # DataFrame의 모든 내용을 보고 싶다면 (데이터가 매우 크면 터미널에 모두 표시하기 어려울 수 있음)
-                print("\n--- 전체 DataFrame 내용 ---")
-                pd.set_option('display.max_rows', None) # 모든 행 표시
-                pd.set_option('display.max_columns', None) # 모든 열 표시
-                pd.set_option('display.width', None) # 너비 제한 없음
-                print(loaded_dataframe)
-            elif isinstance(loaded_dataframe, dict) and "raw_content" in loaded_dataframe:
-                print("\n--- DataFrame으로 파싱 실패, 원본 내용 ---")
-                print(f"File Key: {loaded_dataframe.get('file_key')}")
-                print("Raw Content:")
-                print(loaded_dataframe.get('raw_content')[:500] + "..." if len(loaded_dataframe.get('raw_content', '')) > 500 else loaded_dataframe.get('raw_content'))
-                if "error" in loaded_dataframe:
-                    print(f"Parsing Error: {loaded_dataframe.get('error')}")
-        else:
-            print(f"\n데이터 로드에 실패했거나, {example_zone_id}/{example_equip_id} 경로에 해당 파일이 없습니다.")

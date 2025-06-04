@@ -9,9 +9,10 @@ boto3
 numpy
 pandas
 h5py
+joblib
 
 # 머신러닝/딥러닝 (TensorFlow)
-tensorflow  # tensorflow-metal, tensorflow-macos 대신 일반 tensorflow 사용
+# tensorflow  # tensorflow-metal, tensorflow-macos 대신 일반 tensorflow 사용
             # keras는 tensorflow 2.x 버전부터 포함되어 있으므로 별도 명시 안 해도 됨
             # tensorflow-estimator도 tensorflow가 알아서 관리
 

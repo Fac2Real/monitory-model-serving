@@ -1,43 +1,59 @@
-# import boto3
-# import joblib
-# import os
-# from dotenv import load_dotenv
-# import io
+import boto3
+import joblib
+import os
+from dotenv import load_dotenv
+from io import BytesIO
 
-# load_dotenv() # .env 파일에서 환경 변수 로드
+# (input_data.py의 전처리 함수/데이터 불러오기 함수 import)
+from app.input_data import preprocess_input_data, load_input_data_from_s3
 
-# S3_MODEL_BUCKET_NAME = os.getenv("S3_MODEL_BUCKET_NAME")
-# S3_MODEL_KEY = os.getenv("S3_MODEL_KEY")
-# AWS_REGION = os.getenv("AWS_REGION")
-# AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-# AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+# 환경변수 로드
+load_dotenv()
 
-# LOCAL_MODEL_PATH = "/tmp/downloaded_model.pkl"
+AWS_REGION = os.getenv('AWS_REGION')
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+S3_MODEL_BUCKET = os.getenv('S3_MODEL_BUCKET_NAME', 'monitory-model')
+S3_MODEL_KEY = os.getenv('S3_MODEL_KEY', 'models/lgbm_regressor.pkl')
 
-# _model = None
+_model = None
 
-# def get_s3_client():
-#     """Boto3 S3 클라이언트를 생성합니다."""
-#     if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
-#         return boto3.client(
-#             's3',
-#             aws_access_key_id=AWS_ACCESS_KEY_ID,
-#             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-#             region_name=AWS_REGION
-#         )
-#     else: # IAM 역할 등을 통해 자격 증명 자동 감지할 경우 액세스 키 필요 없음
-#         return boto3.client('s3', region_name=AWS_REGION)
+def get_s3_client():
+    """Boto3 S3 클라이언트를 생성합니다."""
+    if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
+        return boto3.client(
+            's3',
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            region_name=AWS_REGION
+        )
+    else: # IAM 역할 등을 통해 자격 증명 자동 감지할 경우 액세스 키 필요 없음
+        return boto3.client('s3', region_name=AWS_REGION)
 
-# def load_model_from_s3():
-#     """S3에서 모델을 다운로드하고 메모리에 로드합니다."""
-#     global _model
-#     if _model is not None:
-#         print("Model already loaded in memory.")
-#         return _model
 
-#     if not S3_MODEL_BUCKET_NAME or not S3_MODEL_KEY:
-#         print("Error: S3_MODEL_BUCKET_NAME or S3_MODEL_KEY is not set.")
-#         return None
+def load_model_from_s3():
+    """S3에서 모델을 다운로드하고 메모리에 로드합니다."""
+    global _model
+
+    if _model is not None:
+        print("⭐️Model already loaded in memory.")
+        return _model
+
+    if not S3_MODEL_BUCKET or not S3_MODEL_KEY:
+        print("❌ Error: S3_MODEL_BUCKET_NAME or S3_MODEL_KEY is not set.")
+        return None
+
+    s3 = get_s3_client()
+
+    # try:
+    #     print(f"✅Downloading model from s3://{S3_MODEL_BUCKET}/{S3_MODEL_KEY} ")
+    #
+
+    obj = s3.get_object(Bucket=S3_MODEL_BUCKET, Key=S3_MODEL_KEY)
+    model = joblib.load(BytesIO(obj['Body'].read()))
+    print(f"✅ 모델을 s3://{S3_MODEL_BUCKET}/{S3_MODEL_KEY}에서 로드했습니다.")
+    return model
+
 
 #     s3_client = get_s3_client()
 #     try:
