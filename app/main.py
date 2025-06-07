@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Query
+from prometheus_fastapi_instrumentator import Instrumentator
 from typing import Optional
 from . import model
 from . import input_data
@@ -8,6 +9,7 @@ app = FastAPI(
     description="Loads a model and input data from S3 to make predictions.",
     version="1.0.0"
 )
+Instrumentator().instrument(app).expose(app)
 
 # @app.on_event("startup")
 # async def startup_event():
