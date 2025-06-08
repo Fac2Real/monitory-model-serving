@@ -30,6 +30,7 @@ def get_s3_key_for_input(zoneId, equipId):
     now = datetime.now(ZoneInfo("Asia/Seoul"))
     one_hour_ago = now - timedelta(hours=1)
     date = one_hour_ago.strftime("%Y-%m-%d")
+    date = "2025-06-04" # 테스트
 
     s3_key = f"EQUIPMENT/date={date}/zone_id={zoneId}/equip_id={equipId}/"
 
@@ -118,7 +119,7 @@ def load_input_data_from_s3(zoneId, equipId):
         
         # 눈으로 확인하기 위해 DataFrame을 반환하거나,
         # API 응답에서 처리하기 쉽도록 to_dict('records') 등으로 변환하여 반환할 수 있습니다.
-        preprocess_input_data(df,5)
+        return preprocess_input_data(df,5)
         # return df
 
     except s3_client.exceptions.NoSuchKey:
