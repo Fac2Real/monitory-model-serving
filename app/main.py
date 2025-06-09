@@ -35,3 +35,14 @@ async def health_check():
 @app.get("/load", summary="Load data from S3")
 async def load(zoneId, equipId):
     input_data.load_input_data_from_s3(zoneId=zoneId, equipId=equipId)
+
+# http://127.0.0.1:8000/predict?equipId=20250507171316-389&zoneId=20250507165750-827
+@app.get("/predict")
+async def predict(zoneId: str, equipId: str):
+    df_wide = input_data.load_input_data_from_s3(zoneId=zoneId, equipId=equipId)
+    if df_wide is None or df_wide.empty:
+        raise HTTPException(status_code=404, detail="입력 데이터가 없거나 전처리 결과가 없습니다.")
+    result = model.predict(df_wide)
+    if result is None:
+        raise HTTPException(status_code=500, detail="예측에 실패했습니다.")
+    return {"status": "ok", "predictions": result}
