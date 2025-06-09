@@ -2,6 +2,9 @@
 fastapi
 uvicorn[standard]
 
+# Prometheus Exporter
+prometheus-fastapi-instrumentator
+
 # AWS SDK
 boto3
 
