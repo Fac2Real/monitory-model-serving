@@ -39,6 +39,9 @@ async def load(zoneId, equipId):
 # http://127.0.0.1:8000/predict?equipId=20250507171316-389&zoneId=20250507165750-827
 @app.get("/predict")
 async def predict(zoneId: str, equipId: str):
+
+    print("\n\n 📌========================")
+    print(f"🚀 [predict] 설비 추론 시작: equipId={equipId}, zoneId={zoneId}")
     df_wide = input_data.load_input_data_from_s3(zoneId=zoneId, equipId=equipId)
     if df_wide is None or df_wide.empty:
         raise HTTPException(status_code=404, detail="입력 데이터가 없거나 전처리 결과가 없습니다.")

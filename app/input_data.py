@@ -30,7 +30,6 @@ def get_s3_key_for_input(zoneId, equipId):
     now = datetime.now(ZoneInfo("Asia/Seoul"))
     one_hour_ago = now - timedelta(hours=1)
     date = one_hour_ago.strftime("%Y-%m-%d")
-    date = "2025-06-04" # 테스트
 
     s3_key = f"EQUIPMENT/date={date}/zone_id={zoneId}/equip_id={equipId}/"
 
@@ -112,10 +111,10 @@ def load_input_data_from_s3(zoneId, equipId):
             print(f"🚨경고: s3://{target_bucket}/{latest_file_key} 에서 불러온 DataFrame이 비어있습니다.")
         else:
             # 데이터 일부 샘플 출력 (최대 5행)
-            print("\n============================")
+            print("\n----------------------------")
             print("\n 👀 데이터 프레임 미리보기 (최대 5행):")
             print(df.head())
-            print("\n============================")
+            print("\n----------------------------")
         
         # 눈으로 확인하기 위해 DataFrame을 반환하거나,
         # API 응답에서 처리하기 쉽도록 to_dict('records') 등으로 변환하여 반환할 수 있습니다.
