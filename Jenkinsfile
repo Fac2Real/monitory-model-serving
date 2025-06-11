@@ -15,6 +15,10 @@ pipeline {
     /* Slack */
     SLACK_CHANNEL      = '#ci-cd'
     SLACK_CRED_ID      = 'slack-factoreal-token'   // Slack App OAuth Token
+
+    /* Argo CD */
+    ARGOCD_SERVER           = 'argocd.monitory.space'   // Argo CD server endpoint
+    ARGOCD_APPLICATION_NAME = 'model-server'
   }
 
   stages {
@@ -94,17 +98,19 @@ python3.11 -m pytest || echo "Tests not configured, skipping..."
 aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
 docker build -t ${ECR_REGISTRY}/${IMAGE_REPO_NAME}:${DEV_TAG} .
 docker push ${ECR_REGISTRY}/${IMAGE_REPO_NAME}:${DEV_TAG}
-          """
+"""
         }
-        sshagent(credentials: ['monitory-temp']) {
+
+        withCredentials([string(credentialsId: 'argo-jenkins-token', variable: 'ARGOCD_TOKEN')]) {
           sh """
-ssh -o StrictHostKeyChecking=no ec2-user@43.200.39.139 <<'EOF'
-set -e
-cd datastream
-aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}
-docker-compose -f docker-compose-model.yml down -v
-docker-compose -f docker-compose-model.yml up -d --pull always
-EOF
+# 1) ArgoCD 로그인
+argocd login ${ARGOCD_SERVER} --auth-token ${ARGOCD_TOKEN} --insecure
+
+# 2) 동기화 (동기식)
+argocd app sync ${ARGOCD_APPLICATION_NAME}
+
+# 3) 헬스 체크 완료 대기
+argocd app wait ${ARGOCD_APPLICATION_NAME} --health --timeout 300
 """
         }
       }
