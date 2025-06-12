@@ -129,8 +129,8 @@ docker push ${ECR_REGISTRY}/${IMAGE_REPO_NAME}:${env.GIT_COMMIT}
       steps {
         withCredentials([string(credentialsId: 'monitory-iac-github-token', variable: 'GIT_TOKEN')]){
           sh """
-git clone https://${GIT_TOKEN}@github.com/Fac2Real/monitory-iac.git iac
-cd iac
+git clone https://${GIT_TOKEN}@github.com/Fac2Real/monitory-iac.git ${env.GIT_COMMIT}
+cd ${env.GIT_COMMIT}
 git checkout deploy
 git fetch origin main
 git merge --ff-only origin/main
