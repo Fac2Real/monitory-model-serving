@@ -133,7 +133,7 @@ git clone https://${GIT_TOKEN}@github.com/Fac2Real/monitory-iac.git ${env.GIT_CO
 cd ${env.GIT_COMMIT}
 git checkout deploy
 git fetch origin main
-git merge --ff-only origin/main
+git merge --no-ff origin/main -m "ci: merge main → deploy"
 yq -i ".image.tag = \\"${env.GIT_COMMIT}\\"" ${HELM_VALUES_PATH}
 git config user.name  "ci-bot"
 git config user.email "ci-bot@monitory.space"
