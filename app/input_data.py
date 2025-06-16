@@ -207,18 +207,31 @@ def preprocess_input_data(df: pd.DataFrame, window: int = 5) -> pd.DataFrame:
     df_wide = df_wide.rename(columns={'equipId': 'equipment'})
     print(df_wide.head())
 
-    print("\n📊 [7] power_factor 생성 중...")
-    if 'active_power' in df_wide.columns and 'reactive_power' in df_wide.columns:
-        df_wide['power_factor'] = (
+    print("\n📊 [7] 누락된 센서 컬럼 보정 중...")
+    required_cols = []
+    for sensor in ['temperature', 'humidity', 'pressure', 'vibration', 'active_power', 'reactive_power']:
+        required_cols += [
+            f"{sensor}",
+            f"{sensor}_rollmean",
+            f"{sensor}_rollstd"
+        ]
+
+    for col in required_cols:
+        if col not in df_wide.columns:
+            df_wide[col] = 0
+            print(f"🚨 누락된 컬럼 '{col}'을 0으로 채워 추가했습니다.")
+
+    print("\n📊 [8] power_factor 생성 중...")
+    df_wide['power_factor'] = (
             df_wide['active_power'] /
-            (df_wide['active_power']**2 + df_wide['reactive_power']**2)**0.5
-        )
-        print("power_factor 생성 완료")
-    else:
-        print("active_power, reactive_power 컬럼이 없어 power_factor 생성 생략")
+            (df_wide['active_power'] ** 2 + df_wide['reactive_power'] ** 2) ** 0.5
+    ).fillna(0)
+    print("✅ power_factor 생성 완료")
 
     print("\n✅ 전처리 완료! 최종 데이터 샘플:")
     print(df_wide.head())
 
+    end_time = datetime.now(ZoneInfo("Asia/Seoul"))
+    print(f"\n ⏰ 전처리 완료! 종료 시간: {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
     return df_wide
 
