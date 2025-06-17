@@ -1,9 +1,13 @@
 # FastAPI 및 웹 서버
 fastapi
 uvicorn[standard]
+python-dotenv
+pydantic
+
 
 # Prometheus Exporter
 prometheus-fastapi-instrumentator
+prometheus-client
 
 # AWS SDK
 boto3
@@ -16,6 +20,11 @@ h5py
 
 # 머신러닝/딥러닝
 lightgbm==4.5.0
+scikit-learn
+tqdm
 
 # HTTP 요청 (외부 API 등 호출 시만)
 requests
+
+# ───────── Scheduler / Background Jobs ─────────
+apscheduler==3.10.4      # 일일 재학습 Cron (이제 필수)

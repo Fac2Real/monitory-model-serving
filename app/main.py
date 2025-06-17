@@ -1,51 +1,30 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI
+from datetime import datetime, timedelta
 from prometheus_fastapi_instrumentator import Instrumentator
-from typing import Optional
-from . import model
-from . import input_data
+from app.api.v1 import router as api_router
+from app.scheduler import scheduler, run_retrain_job
+from apscheduler.triggers.date import DateTrigger
 
 app = FastAPI(
-    title="ML Model Prediction API for Monitory",
-    description="Loads a model and input data from S3 to make predictions.",
-    version="1.0.0"
+    title="Monitory ML Service",
+    description=(
+        "Monitory ML Service는 스마트 팩토리 설비 센서 데이터를 기반으로 **잔존 수명(RUL) 예측**, "
+        "**실시간 이상 탐지**, **모델 성능 메트릭 조회** 기능을 제공합니다. "
+        "모든 엔드포인트는 `/api/v1` 하위 경로로 노출되며, Prometheus 지표 수집을 통해 "
+        "모델·서비스 상태를 모니터링할 수 있습니다."
+    ),
+    version="2.0.0"
 )
+
+# Prometheus 지표 노출
 Instrumentator().instrument(app).expose(app)
 
-# @app.on_event("startup")
-# async def startup_event():
-#     print("Application startup: Initializing model loader...")
-#     model_loader.load_model_from_s3()
-    
+#라우트 등록
+app.include_router(api_router, prefix="/api/v1")
 
-@app.get("/health", summary="Health Check")
-async def health_check():
-    # model = model_loader.get_model()
-    if model:
-        return {"status": "ok", "message": "API is running and model is loaded."}
-    else:
-        return {"status": "error", "message": "API is running but model is NOT loaded. Check S3 settings or logs."}
-
-
-# @app.get("/predict-from-s3", response_model=schemas.PredictionResult, summary="Predict using data from S3")
-# async def predict(equipId, zoneId):
-#     return model.predict_from_s3_data(equipId, zoneId)
-
-# 접속 링크
-# http://127.0.0.1:8000/load?equipId=20250507171316-389&zoneId=20250507165750-827
-@app.get("/load", summary="Load data from S3")
-async def load(zoneId, equipId):
-    input_data.load_input_data_from_s3(zoneId=zoneId, equipId=equipId)
-
-# http://127.0.0.1:8000/predict?equipId=20250507171316-389&zoneId=20250507165750-827
-@app.get("/predict")
-async def predict(zoneId: str, equipId: str):
-
-    print("\n\n 📌========================")
-    print(f"🚀 [predict] 설비 추론 시작: equipId={equipId}, zoneId={zoneId}")
-    df_wide = input_data.load_input_data_from_s3(zoneId=zoneId, equipId=equipId)
-    if df_wide is None or df_wide.empty:
-        raise HTTPException(status_code=404, detail="입력 데이터가 없거나 전처리 결과가 없습니다.")
-    result = model.predict(df_wide)
-    if result is None:
-        raise HTTPException(status_code=500, detail="예측에 실패했습니다.")
-    return {"status": "ok", "predictions": result}
+@app.on_event("startup")
+async def startup():
+    if not scheduler.running:
+        scheduler.start()
+        # Optional: 첫 시작 시 5초 후 바로 한번 실행 → 개발·테스트용
+        scheduler.add_job(run_retrain_job, DateTrigger(run_date=datetime.now()+timedelta(seconds=5)))
