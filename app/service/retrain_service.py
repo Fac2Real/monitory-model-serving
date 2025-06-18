@@ -45,9 +45,9 @@ logger = get_logger("monitory.retrain")
 def _get_s3_client():
     return boto3.client(
         "s3",
-        region_name=settings.aws_region,
-        aws_access_key_id=settings.aws_access_key_id,
-        aws_secret_access_key=settings.aws_secret_access_key,
+        region_name=settings.AWS_REGION,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     )
 
 
@@ -260,8 +260,7 @@ def _train_model(df: pd.DataFrame) -> Tuple[lgb.LGBMRegressor, dict]:
         categorical_feature=["equipment"],
         callbacks=[
             lgb.log_evaluation(period=0),
-            lgb.early_stopping(50),
-            lgb.reset_parameter({"verbose": -1})  # ← 핵심 수정
+            lgb.early_stopping(50)
         ],
     )
 
@@ -279,7 +278,7 @@ def _train_model(df: pd.DataFrame) -> Tuple[lgb.LGBMRegressor, dict]:
 # 모델 저장 & 버전 관리
 # ───────────────────────────────────────────────────────────────────────────────
 
-_MODEL_BUCKET = settings.s3_model_bucket
+_MODEL_BUCKET = settings.S3_MODEL_BUCKET_NAME
 _LATEST_MODEL_KEY = "models/latest/lgbm_regressor.json"
 _LATEST_METRIC_KEY = "models/latest/metrics.json"
 _VERSION_TEMPLATE = "models/{:%Y/%m/%d/%H%M%S}/{}"  # dt, filename
@@ -298,17 +297,37 @@ def _fetch_latest_rmse() -> Tuple[float, dict]:
         return float("inf"), {}
 
 
-def _upload(version_key: str, model_dict: dict, metrics: dict, promote: bool):
+def _upload(version_key: str, model_txt: dict, metrics: dict, promote: bool):
+    """
+        model_txt : booster.model_to_string() 로 얻은 native text
+        """
     s3 = _get_s3_client()
-    # 버전 히스토리 저장
-    s3.put_object(Bucket=_MODEL_BUCKET, Key=version_key + "/lgbm_regressor.json", Body=json.dumps(model_dict).encode())
-    s3.put_object(Bucket=_MODEL_BUCKET, Key=version_key + "/metrics.json", Body=json.dumps(metrics).encode())
 
+    # ① 히스토리 버전 보존
+    s3.put_object(
+        Bucket=_MODEL_BUCKET,
+        Key=f"{version_key}/lgbm_regressor.json",  # ← 확장자만 json
+        Body=model_txt.encode(),  # ← 내용은 txt
+    )
+    s3.put_object(
+        Bucket=_MODEL_BUCKET,
+        Key=f"{version_key}/metrics.json",
+        Body=json.dumps(metrics, ensure_ascii=False).encode(),
+    )
+
+    # ② latest 심볼릭
     if promote:
-        s3.put_object(Bucket=_MODEL_BUCKET, Key=_LATEST_MODEL_KEY, Body=json.dumps(model_dict).encode())
-        s3.put_object(Bucket=_MODEL_BUCKET, Key=_LATEST_METRIC_KEY, Body=json.dumps(metrics).encode())
+        s3.put_object(
+            Bucket=_MODEL_BUCKET,
+            Key=_LATEST_MODEL_KEY,  # 그대로 .json
+            Body=model_txt.encode(),
+        )
+        s3.put_object(
+            Bucket=_MODEL_BUCKET,
+            Key=_LATEST_METRIC_KEY,
+            Body=json.dumps(metrics, ensure_ascii=False).encode(),
+        )
         logger.info("🏆 최신 모델 승격 → %s", _LATEST_MODEL_KEY)
-
 
 # ───────────────────────────────────────────────────────────────────────────────
 # Public 엔트리포인트 [수정] 날짜 범위 지원
@@ -325,7 +344,7 @@ def train_and_upload(
     둘 다 None 이면 월-prefix 모드(기존 방식).
     """
 
-    bucket = settings.s3_input_data_bucket
+    bucket = settings.S3_INPUT_DATA_BUCKET_NAME
     keys: list[str] = []
 
     # ① 일자 범위 ────────────────────────────────────────
@@ -390,7 +409,9 @@ def train_and_upload(
 
 
     logger.info("✅ Old Eval | RMSE=%.3f ", old_rmse)
-    _upload(version_dir, model.booster_.dump_model(), metrics, promote)
+
+    booster_txt = model.booster_.model_to_string(num_iteration=-1)
+    _upload(version_dir, booster_txt, metrics, promote)
 
     logger.info("📤 S3 업로드 완료 | promote=%s | version_dir=%s", promote, version_dir)
 

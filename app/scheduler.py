@@ -27,11 +27,11 @@ def _count_rows_in_s3_range(start_day: str, end_day: str) -> int:
     """날짜 YYYY-MM-DD 범위의 NDJSON line 개수 합산 (빠른 추정용)."""
     s3 = boto3.client(
         "s3",
-        region_name=settings.aws_region,
-        aws_access_key_id=settings.aws_access_key_id,
-        aws_secret_access_key=settings.aws_secret_access_key,
+        region_name=settings.AWS_REGION,
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
     )
-    bucket = settings.s3_input_data_bucket
+    bucket = settings.S3_INPUT_DATA_BUCKET_NAME
     total = 0
     current = datetime.strptime(start_day, "%Y-%m-%d")
     end     = datetime.strptime(end_day, "%Y-%m-%d")

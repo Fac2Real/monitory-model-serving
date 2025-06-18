@@ -25,12 +25,6 @@ from app.core.logging_config import get_logger
 logger = get_logger("monitory.model")
 
 # ────────────────────────────────────────────────────────────
-# 전역 모델 인스턴스
-# ────────────────────────────────────────────────────────────
-_model: Optional[lgb.Booster] = None
-
-
-# ────────────────────────────────────────────────────────────
 # S3 헬퍼
 # ────────────────────────────────────────────────────────────
 def _get_s3_client():
@@ -49,6 +43,41 @@ def _get_s3_client():
         )
     logger.debug("S3: IAM Role 기반 인증 사용")
     return boto3.client("s3", region_name=settings.AWS_REGION)
+
+# ────────────────────────────────────────────────────────────
+# 모델 변경 시
+# ────────────────────────────────────────────────────────────
+
+_s3     = _get_s3_client()
+_bucket = settings.S3_MODEL_BUCKET_NAME
+_key    = "models/latest/lgbm_regressor.json"
+
+# ▶︎ 캐시 변수
+_model: lgb.Booster | None = None
+_cached_etag: str | None   = None          # S3 객체 ETag (= 콘텐츠 hash)
+
+def _need_reload() -> bool:
+    """S3 ETag 이 바뀌면 True"""
+    global _cached_etag
+    h = _s3.head_object(Bucket=_bucket, Key=_key)
+    etag = h["ETag"].strip('"')
+    if etag != _cached_etag:
+        logger.info("🔄  모델 ETag 변경: %s → %s", _cached_etag, etag)
+        _cached_etag = etag
+        return True
+    return False
+
+def _load_model():
+    """S3 → Booster 로드 + 캐시"""
+    global _model
+    obj = _s3.get_object(Bucket=_bucket, Key=_key)
+    _model = lgb.Booster(model_str=obj["Body"].read().decode())
+    logger.info("✅  모델 로드 성공 (size=%.1f KB)", obj["ContentLength"]/1024)
+
+def ensure_model_ready():
+    """예측 전에 호출 – 자동 리로드 로직"""
+    if (_model is None) or _need_reload():
+        _load_model()
 
 
 # ────────────────────────────────────────────────────────────
@@ -117,8 +146,8 @@ def predict(df_wide: pd.DataFrame) -> Optional[list[float]]:
     list[float] | None
         1-D 예측 결과. 실패 시 `None`.
     """
-    model = get_model()
-    if model is None:
+    ensure_model_ready()
+    if _model is None:
         logger.error("❌ [predict] 모델이 로드되지 않아 예측할 수 없습니다.")
         return None
 
@@ -137,7 +166,7 @@ def predict(df_wide: pd.DataFrame) -> Optional[list[float]]:
     logger.info(f"✅ [predict] 모델 입력 shape={X.shape}")
 
     try:
-        y_pred = model.predict(X)
+        y_pred = _model.predict(X)
         logger.info(f"✅ [predict] 예측 완료 → {y_pred.tolist()}")
         return y_pred.tolist()
     except Exception as e:

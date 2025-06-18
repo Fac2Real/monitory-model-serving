@@ -188,6 +188,8 @@ def preprocess_input_data(df: pd.DataFrame, window: int = 5) -> Optional[pd.Data
         / (wide["active_power"] ** 2 + wide["reactive_power"] ** 2) ** 0.5
     ).fillna(0)
 
+    logger.info(f"⚠️ power_factor 생성 -> {wide['power_factor']}")
+
     clean_cols = ["equipment", *[c for c in FEATURE_COLS if c != "equipment"]]
     wide_clean = wide[clean_cols]
 
