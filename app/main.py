@@ -27,4 +27,4 @@ async def startup():
     if not scheduler.running:
         scheduler.start()
         # Optional: 첫 시작 시 5초 후 바로 한번 실행 → 개발·테스트용
-        scheduler.add_job(run_retrain_job, DateTrigger(run_date=datetime.now()+timedelta(seconds=5*12)))
+        # scheduler.add_job(run_retrain_job, DateTrigger(run_date=datetime.now()+timedelta(seconds=5*12)))
