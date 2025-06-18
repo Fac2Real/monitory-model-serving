@@ -4,6 +4,9 @@ uvicorn[standard]
 python-dotenv
 pydantic
 
+# Pydantic Settings (v2 설정 관리)
+pydantic-settings
+
 
 # Prometheus Exporter
 prometheus-fastapi-instrumentator
