@@ -12,6 +12,7 @@ result = retrain_service.train_and_upload()
 print(result)
 """
 
+
 from __future__ import annotations
 
 import io
